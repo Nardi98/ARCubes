@@ -33,6 +33,8 @@ public class ObjectPlacer : MonoBehaviour
     public GameObject debuggerGameObject;
 
     private Quaternion cameraRotation;
+    private Vector3 cameraPosition;
+    private Vector3 screenWorldPos;
 
     // Start is called before the first frame update
     void Start()
@@ -42,7 +44,8 @@ public class ObjectPlacer : MonoBehaviour
         planeManager = GetComponent<ARPlaneManager>();
         
         
-        cameraRotation = Camera.main.transform.rotation;
+        
+
         
     }
 
@@ -54,6 +57,8 @@ public class ObjectPlacer : MonoBehaviour
             if(Time.realtimeSinceStartup - activeFinger.currentTouch.time > 0.2)
             {
 
+
+
                 if(selectedInteractable == null)
                 {
                     SelectInteractable();
@@ -61,9 +66,12 @@ public class ObjectPlacer : MonoBehaviour
                 }
                 else
                 {
-                    Drag(selectedInteractable,selectionVector,activeFinger.currentTouch);
+                    Drag(selectedInteractable,activeFinger.currentTouch);
                 }
+
                 cameraRotation = Camera.main.transform.rotation;
+                cameraPosition = Camera.main.transform.position;
+                screenWorldPos = Camera.main.ScreenToWorldPoint(activeFinger.currentTouch.screenPosition);
                 
             }
 
@@ -159,14 +167,26 @@ public class ObjectPlacer : MonoBehaviour
         
     }
 
-    private void Drag(GameObject selectedObject, Vector3 movingVector, EnhancedTouch.Touch touch )
+    private void Drag(GameObject selectedObject,  EnhancedTouch.Touch touch )
     {
+
+
+        
         //manage the rotation of the object
         Quaternion deltaRotation = Camera.main.transform.rotation * Quaternion.Inverse(cameraRotation);
-        selectedObject.transform.rotation = selectedObject.transform.rotation * deltaRotation;
+        Vector3 deltaPosition = Camera.main.transform.position - cameraPosition;
 
-        //manage the position based on the camera position
-        selectedObject.transform.position = Camera.main.transform.position/*.ScreenToWorldPoint(touch.screenPosition) * movingVector.magnitude */+ movingVector;
+        Vector3 pos = selectedObject.transform.position - Camera.main.transform.position;
+
+        Vector3 rotatedpos = deltaRotation * pos;
+
+
+        selectedObject.transform.position += deltaPosition + rotatedpos - pos;
+        selectedObject.transform.rotation = deltaRotation * selectedObject.transform.rotation;
+
+
+
+        
     }
 
 }
