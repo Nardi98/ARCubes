@@ -1,7 +1,9 @@
 # ARCubes
  AN ar project made with Unity, openXR and ARfundation
  Download the dimostrative video present in the reposito
-https://github.com/Nardi98/ARCubes/assets/64101118/d5615b97-d1f2-4392-9ba4-4bc3b8d59237
+ <video width="630" height="300" src="https://github.com/Nardi98/ARCubes/assets/64101118/d5615b97-d1f2-4392-9ba4-4bc3b8d59237"></video>
+
+
 
 
 
