@@ -12,29 +12,40 @@ using EnhancedTouch = UnityEngine.InputSystem.EnhancedTouch;
 [RequireComponent(requiredComponent: typeof(ARRaycastManager), requiredComponent2: typeof(ARRaycastManager))]
 public class ObjectPlacer : MonoBehaviour
 {
+    //Interactable to spawn
     [SerializeField] private GameObject prefab;
 
+    //managers 
     private ARRaycastManager raycastManager;
     private ARPlaneManager planeManager;
+
+    //hit lists
     private List<ARRaycastHit> hitList = new List<ARRaycastHit>();
     private List<RaycastHit> virtualHitList = new List<RaycastHit>();
 
-    [SerializeField]
-    private LayerMask interactablesLayer;
-    [SerializeField]
-    private Vector3 spawnOffset = Vector3.zero;
 
+    [SerializeField] private LayerMask interactablesLayer;
+    //distance between the touched point and the spawn point
+    [SerializeField] private Vector3 spawnOffset = Vector3.zero;
+
+    //variable related to souch control
     private bool thouchActive = false;
-    private EnhancedTouch.Finger activeFinger;
+    private bool scaleActive = false;
+    private EnhancedTouch.Finger firstFinger;
+    private EnhancedTouch.Finger secondFinger;
+    private float fingersDistance;
+    private float currentFingersDistance;
 
-    private GameObject selectedInteractable = null;
-    private Vector3 selectionVector;
-
+    //object in the screne used to debug
     public GameObject debuggerGameObject;
 
+    //grab manager, controls the movement and scaling of the grabbed object
+    private GrabManager grabManager;
+
+    //rotation and position of the camera at the previous frame
     private Quaternion cameraRotation;
     private Vector3 cameraPosition;
-    private Vector3 screenWorldPos;
+
 
     // Start is called before the first frame update
     void Start()
@@ -43,39 +54,40 @@ public class ObjectPlacer : MonoBehaviour
         raycastManager = GetComponent<ARRaycastManager>();
         planeManager = GetComponent<ARPlaneManager>();
         
-        
-        
-
-        
     }
 
     // Update is called once per frame
     void Update()
     {
         
-        if (thouchActive ) {
-            if(Time.realtimeSinceStartup - activeFinger.currentTouch.time > 0.2)
+        if (thouchActive) {
+            //checks if the screen touch lasted more than 0.2 seconds
+            if(Time.realtimeSinceStartup - firstFinger.currentTouch.time > 0.2)
             {
-
-
-
-                if(selectedInteractable == null)
+                //if no grab manager exists it cheks if an interactable is being touched and 
+                //if it is it creates a new grab manager and passes the interactable reference to it
+                if(grabManager == null)
                 {
                     SelectInteractable();
-                    
+                   
                 }
+                //if the grab manager already exists then controls the movement of the interactable 
                 else
                 {
-                    Drag(selectedInteractable,activeFinger.currentTouch);
+                    grabManager.MoveInteractable(cameraRotation, cameraPosition);
                 }
 
+                //saves the position and rotation of the camera at this frame 
                 cameraRotation = Camera.main.transform.rotation;
                 cameraPosition = Camera.main.transform.position;
-                screenWorldPos = Camera.main.ScreenToWorldPoint(activeFinger.currentTouch.screenPosition);
                 
             }
-
-            
+        }
+        if(scaleActive)
+        {
+            currentFingersDistance = (firstFinger.currentTouch.screenPosition - secondFinger.currentTouch.screenPosition).magnitude;
+            grabManager.ScaleTouch(fingersDistance, currentFingersDistance, 0.05f, 0.5f);
+            fingersDistance = currentFingersDistance;
 
         }
 
@@ -106,43 +118,70 @@ public class ObjectPlacer : MonoBehaviour
 
     private void FingerDown(EnhancedTouch.Finger finger)
     {
-        if (finger.index != 0)
+        if (finger.index > 1)
         {
             return;
         }
-        thouchActive = true;
-        activeFinger = finger;
+
+        if (finger.index == 0)
+        {
+            thouchActive = true;
+            firstFinger = finger;
+        }
+        else
+        {
+            scaleActive = true;
+            secondFinger = finger;
+            //computes the distance between the two fingers
+            fingersDistance = (firstFinger.currentTouch.screenPosition - secondFinger.currentTouch.screenPosition).magnitude;
+        }
 
         
     }
 
     private void FingerUp(EnhancedTouch.Finger finger)
     {
-        debuggerGameObject.SetActive(!debuggerGameObject.active);
-        //debuggerObject.SetActive(!debuggerObject.active);
-        if (finger.index != 0)
+        
+
+        //checks if more than one finger is down if yes return
+        if (finger.index >1)
         {
             return;
         }
-
-        if (selectedInteractable != null)
+        if (finger.index == 1)
         {
-            selectedInteractable.GetComponent<Rigidbody>().useGravity = true;
-            selectedInteractable = null;
+            scaleActive = false;
+            return;
         }
 
 
+        if (grabManager != null)
+        {
+            grabManager.CancelGrab();
+            grabManager = null;
+        }
+
+
+
+        //checks if the last tap duration was under 0.2s if it is creates or deastroy an interactable
         if (finger.lastTouch.isTap)
         {
-            Ray ray = Camera.main.ScreenPointToRay(activeFinger.currentTouch.screenPosition);
+            //creates a ray from the point touched in the screen to the world 
+            Ray ray = Camera.main.ScreenPointToRay(firstFinger.currentTouch.screenPosition);
             RaycastHit hit;
-            //checks if more than one finger is down if yes return
 
+            //checks if the raycast hits an object if yes it destroys it
             if (Physics.Raycast(ray, out hit, 100f, interactablesLayer))
             {
-                Destroy(hit.transform.gameObject);
+                Interactable interactableTouched;
+                if (hit.transform.gameObject.TryGetComponent<Interactable>(out interactableTouched))
+                {
+                    interactableTouched.Explode();
+                }
             }
-            else if (raycastManager.Raycast(activeFinger.currentTouch.screenPosition, hitList, TrackableType.PlaneWithinPolygon))
+
+            //if no object was it checks if the ray hits a plane if it does creates a new interactable
+            else if (raycastManager.Raycast(firstFinger.currentTouch.screenPosition, hitList, TrackableType.PlaneWithinPolygon))
             {
                 Pose pose = hitList[0].pose;
                 GameObject obj = Instantiate(prefab, pose.position + spawnOffset, pose.rotation);
@@ -150,43 +189,23 @@ public class ObjectPlacer : MonoBehaviour
         }
     }
 
+
+    //function that select an interactable 
     private void SelectInteractable()
     {
         
-        Ray ray = Camera.main.ScreenPointToRay(activeFinger.currentTouch.screenPosition);
+        Ray ray = Camera.main.ScreenPointToRay(firstFinger.currentTouch.screenPosition);
         
         RaycastHit hit;
         //checks if more than one finger is down if yes return
 
-        if (Physics.Raycast(ray, out hit, 100f, interactablesLayer) && selectedInteractable == null)
+        //checks if the ray coming from the touched screen position hits an object on the interactable layer
+        if (Physics.Raycast(ray, out hit, 100f, interactablesLayer) && grabManager == null)
         {
-            selectedInteractable = hit.transform.gameObject;
-            selectionVector = selectedInteractable.transform.position - Camera.main.transform.position;//ScreenToWorldPoint(activeFinger.currentTouch.screenPosition);
-            selectedInteractable.GetComponent<Rigidbody>().useGravity = false;
+            grabManager = new GrabManager(hit.transform.gameObject);
         }
         
     }
-
-    private void Drag(GameObject selectedObject,  EnhancedTouch.Touch touch )
-    {
-
-
-        
-        //manage the rotation of the object
-        Quaternion deltaRotation = Camera.main.transform.rotation * Quaternion.Inverse(cameraRotation);
-        Vector3 deltaPosition = Camera.main.transform.position - cameraPosition;
-
-        Vector3 pos = selectedObject.transform.position - Camera.main.transform.position;
-
-        Vector3 rotatedpos = deltaRotation * pos;
-
-
-        selectedObject.transform.position += deltaPosition + rotatedpos - pos;
-        selectedObject.transform.rotation = deltaRotation * selectedObject.transform.rotation;
-
-
-
-        
-    }
+   
 
 }

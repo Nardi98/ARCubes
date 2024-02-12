@@ -147,7 +147,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   explosionRadius: 2
-  explosionStrength: 5
+  explosionStrength: 10
   interactablesMask:
     serializedVersion: 2
     m_Bits: 64
+  debriCount: 5
+  debritPrefab: {fileID: 4221742316606613919}
