@@ -153,5 +153,5 @@ MonoBehaviour:
     m_Bits: 64
   debriCount: 10
   debritPrefab: {fileID: 4221742316606613919}
-  minScale: 0.5
+  minScale: 0.01
   destroyTime: 10
