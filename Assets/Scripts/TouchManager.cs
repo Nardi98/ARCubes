@@ -10,7 +10,7 @@ using EnhancedTouch = UnityEngine.InputSystem.EnhancedTouch;
 
 
 [RequireComponent(requiredComponent: typeof(ARRaycastManager), requiredComponent2: typeof(ARRaycastManager))]
-public class ObjectPlacer : MonoBehaviour
+public class TouchManager : MonoBehaviour
 {
     //Interactable to spawn
     [SerializeField] private GameObject prefab;
@@ -69,8 +69,7 @@ public class ObjectPlacer : MonoBehaviour
                 if(grabManager == null)
                 {
                     SelectInteractable();
-                   
-                }
+                                   }
                 //if the grab manager already exists then controls the movement of the interactable 
                 else
                 {
@@ -85,6 +84,7 @@ public class ObjectPlacer : MonoBehaviour
         }
         if(scaleActive)
         {
+            //Move in a function
             currentFingersDistance = (firstFinger.currentTouch.screenPosition - secondFinger.currentTouch.screenPosition).magnitude;
             grabManager.ScaleTouch(fingersDistance, currentFingersDistance, 0.05f, 0.5f);
             fingersDistance = currentFingersDistance;
