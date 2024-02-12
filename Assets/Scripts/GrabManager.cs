@@ -30,7 +30,7 @@ public class GrabManager
     }
 
 
-    //Summary
+    //Summary:
     //      Moves the interactable based on the rotation and movement of the holder. 
     //      The distance between the older and the interactable doesen't change
     public void MoveInteractable(Quaternion holderRotation, Vector3 holderPosition)

@@ -1,7 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.XR.Interaction.Toolkit;
+
 
 public class Interactable : MonoBehaviour
 {
@@ -27,7 +25,8 @@ public class Interactable : MonoBehaviour
     
     private void Update()
     {
-        //checks if the scale is superior to a certain minimum if it isn't then starts a timer and destroy the object
+        //checks if the scale is superior to a certain minimum if it
+        //isn't then starts a timer and destroy the object
         if (transform.localScale.x <= minScale)
         {
             passedTime += Time.deltaTime;
@@ -39,7 +38,9 @@ public class Interactable : MonoBehaviour
     }
     
 
-    // Function used to make the interactable explode producing debris and a force affecting the other interactables.
+    //Summary:
+    //      Make the interactable explode producing debris and a force
+    //      affecting the other interactables.
     public void Explode()
     {
         
@@ -65,27 +66,23 @@ public class Interactable : MonoBehaviour
                 {
                     //if a rigid body is found computes the distance between objects and the explosion force than add the force
                     float distance = Vector3.Distance(gameObject.transform.position, col.gameObject.transform.position);
+
                     Vector3 explosionForce = explosionStrength * (col.gameObject.transform.position - gameObject.transform.position).normalized / (distance);
                     Vector3 explosionForceScale = explosionForce * gameObject.transform.localScale.magnitude * 4;
+
                     targetRigidBody.AddForce(explosionForceScale);
 
                 }
-
             }
-            
-
-
         }
         Destroy(gameObject);
-
     }
     
     //Summary:
     //      Spawns the debrits with randomly around the objects coordinates with random sizes
-    //
     private void SpawnDebrits(GameObject prefab, int number)
     {
-        
+
         if (gameObject.transform.localScale.x >= 0.05)
         {
             for (int i = 0; i < number; i++)
@@ -93,7 +90,6 @@ public class Interactable : MonoBehaviour
                 Vector3 randomOffset = new Vector3(Random.Range(-0.1f, 0.1f), Random.Range(0f, 0.1f), Random.Range(-0.1f, 0.1f));
                 GameObject debrit = Instantiate(prefab, gameObject.transform.position + randomOffset, Quaternion.identity);
                 debrit.transform.localScale = gameObject.transform.localScale / (Random.Range(1.5f, 4f));
-
             }
         }
     }

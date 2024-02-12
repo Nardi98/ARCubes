@@ -21,8 +21,6 @@ public class TouchManager : MonoBehaviour
 
     //hit lists
     private List<ARRaycastHit> hitList = new List<ARRaycastHit>();
-    private List<RaycastHit> virtualHitList = new List<RaycastHit>();
-
 
     [SerializeField] private LayerMask interactablesLayer;
     //distance between the touched point and the spawn point
@@ -95,16 +93,13 @@ public class TouchManager : MonoBehaviour
     }
 
 
-
+    //when enabled subscribe to to events
     private void OnEnable()
     {
         EnhancedTouch.EnhancedTouchSupport.Enable();
         //Event subscription
         EnhancedTouch.Touch.onFingerDown += FingerDown;
         EnhancedTouch.Touch.onFingerUp += FingerUp;
-
-
-
     }
 
     private void OnDisable()
@@ -113,9 +108,11 @@ public class TouchManager : MonoBehaviour
         EnhancedTouch.Touch.onFingerDown -= FingerDown;
         EnhancedTouch.Touch.onFingerUp -= FingerUp;
         
-        thouchActive = false;
     }
 
+    //Summary:
+    //      Called when a new finger touches the screen, handles it differently
+    //      dipending if it is the first, the second or anotehr finger
     private void FingerDown(EnhancedTouch.Finger finger)
     {
         if (finger.index > 1)
@@ -139,11 +136,15 @@ public class TouchManager : MonoBehaviour
         
     }
 
+    //Summary:
+    //      called when a finger is lifted from the screen. Checks if it was
+    //      the first finger or the second finger if it was the first finger
+    //      checks if it was a tap (duretion under 0.2s). If it was creates
+    //      a new cube in case it a plane wa tapped or, if a cube was tapped,
+    //      makes it explode
     private void FingerUp(EnhancedTouch.Finger finger)
     {
-        
-
-        //checks if more than one finger is down if yes return
+        //checks what finger was lifted
         if (finger.index >1)
         {
             return;
@@ -154,7 +155,7 @@ public class TouchManager : MonoBehaviour
             return;
         }
 
-
+        // cancel the grab
         if (grabManager != null)
         {
             grabManager.CancelGrab();
@@ -190,7 +191,8 @@ public class TouchManager : MonoBehaviour
     }
 
 
-    //function that select an interactable 
+    //Summary:
+    //      select an interactable if one is long pressed
     private void SelectInteractable()
     {
         
@@ -199,7 +201,7 @@ public class TouchManager : MonoBehaviour
         RaycastHit hit;
         //checks if more than one finger is down if yes return
 
-        //checks if the ray coming from the touched screen position hits an object on the interactable layer
+        //checks if the ray coming from the touched screen position hits an object in the interactable layer
         if (Physics.Raycast(ray, out hit, 100f, interactablesLayer) && grabManager == null)
         {
             grabManager = new GrabManager(hit.transform.gameObject);
