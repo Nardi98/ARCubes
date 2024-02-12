@@ -12,8 +12,17 @@ using EnhancedTouch = UnityEngine.InputSystem.EnhancedTouch;
 [RequireComponent(requiredComponent: typeof(ARRaycastManager), requiredComponent2: typeof(ARRaycastManager))]
 public class TouchManager : MonoBehaviour
 {
+    //Object that manages the inputs through touch screen
+    //The interactions can be:
+    //      one thingher tap (create or destroy a cube)
+    //      prolonged tap on an interactable (grabs it)
+    //      two fingers interactable resize 
+
+
     //Interactable to spawn
-    [SerializeField] private GameObject prefab;
+    [SerializeField] private GameObject prefabHorizontal;
+    [SerializeField] private GameObject prefabVertical;
+
 
     //managers 
     private ARRaycastManager raycastManager;
@@ -34,8 +43,6 @@ public class TouchManager : MonoBehaviour
     private float fingersDistance;
     private float currentFingersDistance;
 
-    //object in the screne used to debug
-    public GameObject debuggerGameObject;
 
     //grab manager, controls the movement and scaling of the grabbed object
     private GrabManager grabManager;
@@ -67,7 +74,7 @@ public class TouchManager : MonoBehaviour
                 if(grabManager == null)
                 {
                     SelectInteractable();
-                                   }
+                }
                 //if the grab manager already exists then controls the movement of the interactable 
                 else
                 {
@@ -177,15 +184,26 @@ public class TouchManager : MonoBehaviour
                 Interactable interactableTouched;
                 if (hit.transform.gameObject.TryGetComponent<Interactable>(out interactableTouched))
                 {
-                    interactableTouched.Explode();
+                    interactableTouched.Interact();
                 }
             }
 
             //if no object was it checks if the ray hits a plane if it does creates a new interactable
             else if (raycastManager.Raycast(firstFinger.currentTouch.screenPosition, hitList, TrackableType.PlaneWithinPolygon))
             {
+                ARPlane plane = planeManager.GetPlane(hitList[0].trackableId);
                 Pose pose = hitList[0].pose;
-                GameObject obj = Instantiate(prefab, pose.position + spawnOffset, pose.rotation);
+
+                //Differentiates the object to place based on the orientation of the ARPlane
+                if (plane.alignment == PlaneAlignment.Vertical)
+                {
+                    
+                    GameObject obj = Instantiate(prefabVertical, pose.position, pose.rotation);
+                }
+                else
+                {
+                    GameObject obj = Instantiate(prefabHorizontal, pose.position + spawnOffset, pose.rotation);
+                }
             }
         }
     }

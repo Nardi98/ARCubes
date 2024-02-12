@@ -14,7 +14,8 @@ public class GrabManager
     //      Scale  the interactable using a float
 
     private GameObject selectedInteractable;
-    private Rigidbody rigidBody;
+    private Rigidbody rigidBody = null;
+    private Interactable interactable;
 
     
 
@@ -27,6 +28,8 @@ public class GrabManager
         {
             rigidBody.isKinematic = true;
         }
+        interactable = selectedInteractable.GetComponent<Interactable>();
+
     }
 
 
@@ -35,20 +38,22 @@ public class GrabManager
     //      The distance between the older and the interactable doesen't change
     public void MoveInteractable(Quaternion holderRotation, Vector3 holderPosition)
     {
-        //computes the delta rotation and position comparing the ones povided in input with the current ones
-        Quaternion deltaRotation = Camera.main.transform.rotation * Quaternion.Inverse(holderRotation);
-        Vector3 deltaPosition = Camera.main.transform.position - holderPosition;
+        if (interactable.Movable)
+        {
+            //computes the delta rotation and position comparing the ones povided in input with the current ones
+            Quaternion deltaRotation = Camera.main.transform.rotation * Quaternion.Inverse(holderRotation);
+            Vector3 deltaPosition = Camera.main.transform.position - holderPosition;
 
-        //computes the vecotor that goes from the holder to the selected object
-        Vector3 pos = selectedInteractable.transform.position - Camera.main.transform.position;
-        
-        //rotates the vector that goes from the holder to the object of the delta rotation
-        Vector3 rotatedpos = deltaRotation * pos;
-        
-        //Modifies the current position and rotation 
-        selectedInteractable.transform.position += deltaPosition + rotatedpos - pos;
-        selectedInteractable.transform.rotation = deltaRotation * selectedInteractable.transform.rotation;
-        
+            //computes the vecotor that goes from the holder to the selected object
+            Vector3 pos = selectedInteractable.transform.position - Camera.main.transform.position;
+
+            //rotates the vector that goes from the holder to the object of the delta rotation
+            Vector3 rotatedpos = deltaRotation * pos;
+
+            //Modifies the current position and rotation 
+            selectedInteractable.transform.position += deltaPosition + rotatedpos - pos;
+            selectedInteractable.transform.rotation = deltaRotation * selectedInteractable.transform.rotation;
+        }
     }
 
     //Summary:
@@ -100,10 +105,10 @@ public class GrabManager
     // 
     public void CancelGrab()
     {
-
-         
-        //rigidBody.useGravity = true;
-        rigidBody.isKinematic = false;
+        if (interactable.Movable)
+        {
+            rigidBody.isKinematic = false;
+        }
         selectedInteractable = null;
     }
 }

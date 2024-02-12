@@ -13,9 +13,9 @@ GameObject:
   - component: {fileID: 4256647466228437299}
   - component: {fileID: 7865135449433482542}
   - component: {fileID: 4150261105270344749}
-  - component: {fileID: -2640431142165023826}
+  - component: {fileID: -7139140212828112745}
   m_Layer: 6
-  m_Name: Cube
+  m_Name: bomb
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -134,7 +134,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &-2640431142165023826
+--- !u!114 &-7139140212828112745
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -143,7 +143,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 4221742316606613919}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bc79a961afd9db34d8dd1b1eb0cb5e5c, type: 3}
+  m_Script: {fileID: 11500000, guid: 9e4b376211382c84c97b8b29991408c9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   explosionRadius: 2
@@ -151,5 +151,7 @@ MonoBehaviour:
   interactablesMask:
     serializedVersion: 2
     m_Bits: 64
-  debriCount: 5
+  debriCount: 10
   debritPrefab: {fileID: 4221742316606613919}
+  minScale: 0.5
+  destroyTime: 10
