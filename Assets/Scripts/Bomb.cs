@@ -50,7 +50,7 @@ public class Bomb : Interactable
 
         if (gameObject.transform.localScale.x >= 0.01)
         {
-            SpawnDebrits(debritPrefab, 10);
+            SpawnDebrits(debritPrefab, debriCount);
 
             //Computes the explosion radius using the scale of the object and the initial explosion radius
             float finalExplosionRadius = explosionRadius * gameObject.transform.localScale.magnitude * 15;
